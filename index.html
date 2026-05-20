@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SampleGrab — Studio Audio Capture for Chrome</title>
+  <meta name="description" content="Professional browser audio recording workstation. Capture any sound from any tab with studio-grade controls — gain, limiter, waveform editor, and more." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0d0f11;
+      --bg2: #131619;
+      --bg3: #1a1e22;
+      --border: #242a30;
+      --teal: #00e5c4;
+      --teal-dim: #00b89e;
+      --red: #ff3d3d;
+      --amber: #ffb830;
+      --text: #d4dde6;
+      --text-dim: #6b7a89;
+      --text-muted: #3d4a56;
+      --mono: 'Space Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      height: 60px;
+      background: rgba(13,15,17,0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo {
+      font-family: var(--mono);
+      font-size: 1rem;
+      letter-spacing: 0.12em;
+      color: var(--teal);
+      text-decoration: none;
+      text-transform: uppercase;
+    }
+    .nav-logo span { color: var(--text-dim); }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      color: var(--text-dim);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--teal); }
+    .nav-cta {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      letter-spacing: 0.1em;
+      padding: 0.45rem 1.1rem;
+      background: transparent;
+      border: 1px solid var(--teal);
+      color: var(--teal);
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: all 0.2s;
+    }
+    .nav-cta:hover { background: var(--teal); color: var(--bg); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      padding: 120px 2rem 80px;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .hero-grid-bg {
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,229,196,0.04) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,229,196,0.04) 1px, transparent 1px);
+      background-size: 40px 40px;
+      mask-image: radial-gradient(ellipse 80% 60% at 50% 40%, black 30%, transparent 100%);
+    }
+
+    .hero-glow {
+      position: absolute;
+      top: 20%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 300px;
+      background: radial-gradient(ellipse, rgba(0,229,196,0.1) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 1.5rem;
+      position: relative;
+    }
+    .hero-eyebrow::before, .hero-eyebrow::after {
+      content: '//';
+      color: var(--text-muted);
+      margin: 0 0.6rem;
+    }
+
+    h1 {
+      font-size: clamp(3rem, 8vw, 6.5rem);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      position: relative;
+      margin-bottom: 1.5rem;
+    }
+    h1 em {
+      font-style: normal;
+      color: var(--teal);
+      position: relative;
+    }
+    h1 em::after {
+      content: '';
+      position: absolute;
+      bottom: 4px;
+      left: 0; right: 0;
+      height: 3px;
+      background: var(--teal);
+      opacity: 0.4;
+    }
+
+    .hero-sub {
+      font-size: 1.1rem;
+      color: var(--text-dim);
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+      line-height: 1.7;
+      position: relative;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      flex-wrap: wrap;
+      position: relative;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 2rem;
+      background: var(--teal);
+      color: var(--bg);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      font-weight: 700;
+      transition: all 0.2s;
+      clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+    }
+    .btn-primary:hover { background: #fff; transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,196,0.3); }
+
+    .btn-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.9rem 2rem;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-dim);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .btn-secondary:hover { border-color: var(--teal); color: var(--teal); }
+
+    /* STATS BAR */
+    .stats-bar {
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg2);
+      display: flex;
+      justify-content: center;
+      gap: 0;
+      overflow: hidden;
+    }
+    .stat-item {
+      flex: 1;
+      max-width: 220px;
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-right: 1px solid var(--border);
+      position: relative;
+    }
+    .stat-item:last-child { border-right: none; }
+    .stat-num {
+      font-family: var(--mono);
+      font-size: 2rem;
+      font-weight: 700;
+      color: var(--teal);
+      display: block;
+      line-height: 1;
+    }
+    .stat-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-top: 0.4rem;
+      display: block;
+    }
+
+    /* SCREENSHOT */
+    .screenshot-section {
+      padding: 100px 2rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .screenshot-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,229,196,0.04) 0%, transparent 70%);
+    }
+    .screenshot-wrapper {
+      max-width: 820px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .screenshot-label {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      text-align: center;
+    }
+    .screenshot-frame {
+      border: 1px solid var(--border);
+      border-top: 3px solid var(--teal);
+      background: var(--bg2);
+      border-radius: 0;
+      overflow: hidden;
+      box-shadow: 0 40px 100px rgba(0,0,0,0.6), 0 0 0 1px rgba(0,229,196,0.08);
+      position: relative;
+    }
+    .screenshot-frame img {
+      width: 100%;
+      display: block;
+      opacity: 0.95;
+    }
+    .screenshot-corner {
+      position: absolute;
+      width: 16px; height: 16px;
+      border-color: var(--teal);
+      border-style: solid;
+      opacity: 0.6;
+    }
+    .sc-tl { top: -2px; left: -2px; border-width: 2px 0 0 2px; }
+    .sc-tr { top: -2px; right: -2px; border-width: 2px 2px 0 0; }
+    .sc-bl { bottom: -2px; left: -2px; border-width: 0 0 2px 2px; }
+    .sc-br { bottom: -2px; right: -2px; border-width: 0 2px 2px 0; }
+
+    /* FEATURES */
+    .features {
+      padding: 100px 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .section-header {
+      margin-bottom: 4rem;
+    }
+    .section-tag {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--teal);
+      display: block;
+      margin-bottom: 0.8rem;
+    }
+    .section-title {
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+    }
+    .section-title span { color: var(--teal); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+    .feature-card {
+      background: var(--bg);
+      padding: 2.5rem 2rem;
+      transition: background 0.2s;
+      position: relative;
+    }
+    .feature-card:hover { background: var(--bg2); }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: var(--teal);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+    .feature-card:hover::before { transform: scaleX(1); }
+
+    .feature-icon {
+      width: 40px; height: 40px;
+      margin-bottom: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.3rem;
+    }
+    .feature-name {
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--teal);
+      margin-bottom: 0.6rem;
+    }
+    .feature-desc {
+      font-size: 0.92rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    /* HOW IT WORKS */
+    .how-section {
+      padding: 100px 2rem;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .how-inner {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .steps {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 3rem;
+      margin-top: 4rem;
+      position: relative;
+    }
+    .step {
+      position: relative;
+    }
+    .step-num {
+      font-family: var(--mono);
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 1rem;
+      position: relative;
+      z-index: 0;
+    }
+    .step-num::after {
+      content: attr(data-n);
+      position: absolute;
+      left: 3px; top: 3px;
+      color: var(--teal);
+      opacity: 0.15;
+    }
+    .step-title {
+      font-weight: 700;
+      font-size: 1rem;
+      margin-bottom: 0.5rem;
+      letter-spacing: -0.01em;
+    }
+    .step-desc {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+    }
+
+    /* BLOG SECTION */
+    .blog-section {
+      padding: 100px 2rem;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .blog-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 3rem;
+    }
+    .blog-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 2rem;
+      text-decoration: none;
+      color: inherit;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      transition: all 0.2s;
+      position: relative;
+      overflow: hidden;
+    }
+    .blog-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(0,229,196,0.04) 0%, transparent 60%);
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .blog-card:hover { border-color: rgba(0,229,196,0.3); transform: translateY(-3px); box-shadow: 0 20px 60px rgba(0,0,0,0.4); }
+    .blog-card:hover::after { opacity: 1; }
+    .blog-tag {
+      font-family: var(--mono);
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--teal);
+    }
+    .blog-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+    .blog-excerpt {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      line-height: 1.7;
+      flex: 1;
+    }
+    .blog-meta {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      display: flex;
+      justify-content: space-between;
+    }
+    .blog-arrow {
+      font-size: 1.2rem;
+      color: var(--teal);
+      opacity: 0;
+      transition: opacity 0.2s;
+      align-self: flex-end;
+    }
+    .blog-card:hover .blog-arrow { opacity: 1; }
+
+    /* CTA SECTION */
+    .cta-section {
+      padding: 120px 2rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 50% 80% at 50% 50%, rgba(0,229,196,0.06) 0%, transparent 70%),
+        repeating-linear-gradient(
+          -45deg,
+          transparent,
+          transparent 40px,
+          rgba(0,229,196,0.01) 40px,
+          rgba(0,229,196,0.01) 41px
+        );
+    }
+    .cta-inner { position: relative; max-width: 600px; margin: 0 auto; }
+    .cta-badge {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      background: rgba(0,229,196,0.1);
+      border: 1px solid rgba(0,229,196,0.3);
+      color: var(--teal);
+      padding: 0.3rem 0.8rem;
+      margin-bottom: 2rem;
+    }
+    .cta-title {
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .cta-sub {
+      color: var(--text-dim);
+      margin-bottom: 2.5rem;
+      font-size: 1rem;
+    }
+    .cta-note {
+      margin-top: 1.5rem;
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      background: var(--bg);
+      padding: 2.5rem 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+    .footer-logo {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.15em;
+      color: var(--teal);
+      text-transform: uppercase;
+    }
+    .footer-links {
+      display: flex;
+      gap: 2rem;
+    }
+    .footer-links a {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover { color: var(--teal); }
+    .footer-copy {
+      font-family: var(--mono);
+      font-size: 0.65rem;
+      color: var(--text-muted);
+    }
+
+    /* UTILS */
+    .teal { color: var(--teal); }
+    .rec-dot-demo {
+      display: inline-block;
+      width: 8px; height: 8px;
+      background: var(--red);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--red);
+      margin-right: 0.4rem;
+      animation: blink 1.2s infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    @media (max-width: 640px) {
+      .nav-links { display: none; }
+      .stats-bar { flex-wrap: wrap; }
+      .stat-item { min-width: 50%; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/" class="nav-logo">Sample<span>Grab</span></a>
+  <div class="nav-links">
+    <a href="#features">Features</a>
+    <a href="#how">How it works</a>
+    <a href="#blog">Blog</a>
+  </div>
+  <a href="https://chrome.google.com/webstore" class="nav-cta">Add to Chrome →</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid-bg"></div>
+  <div class="hero-glow"></div>
+
+  <div class="hero-eyebrow">Chrome Extension</div>
+  <h1>Studio Audio<br><em>Capture</em><br>in Your Browser</h1>
+  <p class="hero-sub">
+    Record any sound from any tab with professional-grade controls.
+    Gain, limiter, waveform editor, retro-rec — everything a producer needs, built right into Chrome.
+  </p>
+  <div class="hero-actions">
+    <a href="https://chrome.google.com/webstore" class="btn-primary">
+      <span class="rec-dot-demo"></span> Add to Chrome — Free
+    </a>
+    <a href="#features" class="btn-secondary">See features ↓</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats-bar">
+  <div class="stat-item">
+    <span class="stat-num">0dB</span>
+    <span class="stat-label">Lossless capture</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">44.1k</span>
+    <span class="stat-label">Sample rate</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">24bit</span>
+    <span class="stat-label">Max bit depth</span>
+  </div>
+  <div class="stat-item">
+    <span class="stat-num">MP3 · WAV</span>
+    <span class="stat-label">Export formats</span>
+  </div>
+</div>
+
+<!-- SCREENSHOT -->
+<section class="screenshot-section">
+  <div class="screenshot-wrapper">
+    <div class="screenshot-label">// SampleGrab v0.1 interface</div>
+    <div class="screenshot-frame">
+      <div class="screenshot-corner sc-tl"></div>
+      <div class="screenshot-corner sc-tr"></div>
+      <div class="screenshot-corner sc-bl"></div>
+      <div class="screenshot-corner sc-br"></div>
+      <img src="screenshot.png" alt="SampleGrab extension interface showing waveform, gain knob, limiter, and recording controls" />
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="features" id="features">
+  <div class="section-header">
+    <span class="section-tag">// features</span>
+    <h2 class="section-title">Pro tools.<br><span>Browser native.</span></h2>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card">
+      <div class="feature-icon">🎚️</div>
+      <div class="feature-name">Gain Control</div>
+      <p class="feature-desc">Dial in the perfect input level with a precision rotary knob. Boost quiet streams or tame loud sources — from −18 dB all the way up to +12 dB.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🛡️</div>
+      <div class="feature-name">Brick-wall Limiter</div>
+      <p class="feature-desc">Never clip a recording again. The built-in limiter with configurable attack and release times protects your recordings from sudden loud transients.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📊</div>
+      <div class="feature-name">Real-time VU Meter</div>
+      <p class="feature-desc">Professional stereo level meter with peak hold and clip indicator. Monitor both L and R channels independently while you record.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">〰️</div>
+      <div class="feature-name">Live Waveform</div>
+      <p class="feature-desc">Watch your recording build in real time on the scrolling waveform canvas. Annotated with time markers for instant orientation.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⏮️</div>
+      <div class="feature-name">Retro-Rec Buffer</div>
+      <p class="feature-desc">Always-on background buffer captures the last 30s, 60s, or 5 minutes — even before you hit record. Never lose that perfect moment again.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">✂️</div>
+      <div class="feature-name">Waveform Editor</div>
+      <p class="feature-desc">Trim, select, loop and normalize your clips directly inside the extension. No need to open a DAW for quick edits.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">📦</div>
+      <div class="feature-name">Library & ZIP Export</div>
+      <p class="feature-desc">All your clips stay in a built-in library. Export individual files or bundle everything into a single ZIP archive — one click.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">⚙️</div>
+      <div class="feature-name">Smart Settings</div>
+      <p class="feature-desc">Auto-normalize on stop, auto-download, Save As dialog, custom download subfolder — tune the workflow exactly to how you work.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">🆓</div>
+      <div class="feature-name">Free to Use</div>
+      <p class="feature-desc">Core recording features are completely free. No account needed, no watermarks, no time limits on recordings.</p>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section" id="how">
+  <div class="how-inner">
+    <div class="section-header">
+      <span class="section-tag">// how it works</span>
+      <h2 class="section-title">Three steps<br>to <span>studio quality.</span></h2>
+    </div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num" data-n="01">01</div>
+        <div class="step-title">Install the extension</div>
+        <p class="step-desc">Add SampleGrab to Chrome in one click from the Web Store. No sign-up, no setup wizard, no nonsense.</p>
+      </div>
+      <div class="step">
+        <div class="step-num" data-n="02">02</div>
+        <div class="step-title">Open any tab & hit record</div>
+        <p class="step-desc">Navigate to YouTube, Spotify, a podcast, a video call — anything. Click the record button and SampleGrab starts capturing the tab's audio.</p>
+      </div>
+      <div class="step">
+        <div class="step-num" data-n="03">03</div>
+        <div class="step-title">Edit & export</div>
+        <p class="step-desc">Trim, normalize, and download as MP3 or WAV. Your clips live in the built-in library until you're ready to export.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BLOG -->
+<section class="blog-section" id="blog">
+  <div class="section-header">
+    <span class="section-tag">// blog</span>
+    <h2 class="section-title">Tips, guides<br><span>& deep dives.</span></h2>
+  </div>
+  <div class="blog-grid">
+    <a href="blog/gain-and-limiter.html" class="blog-card">
+      <span class="blog-tag">Tutorial</span>
+      <div class="blog-title">Gain & Limiter: How to Set Levels Like a Sound Engineer</div>
+      <p class="blog-excerpt">Too quiet and you lose dynamic range. Too loud and you clip. Learn how to use SampleGrab's gain knob and brick-wall limiter to nail the perfect level every time.</p>
+      <div class="blog-meta">
+        <span>5 min read</span>
+        <span>May 2025</span>
+      </div>
+      <span class="blog-arrow">→</span>
+    </a>
+    <a href="blog/retro-rec.html" class="blog-card">
+      <span class="blog-tag">Feature Guide</span>
+      <div class="blog-title">Retro-Rec: Never Miss a Moment Again</div>
+      <p class="blog-excerpt">The Retro-Rec buffer silently captures audio in the background before you even hit record. Here's how it works and when to use 30s vs 5m buffer mode.</p>
+      <div class="blog-meta">
+        <span>4 min read</span>
+        <span>May 2025</span>
+      </div>
+      <span class="blog-arrow">→</span>
+    </a>
+    <a href="blog/waveform-editor.html" class="blog-card">
+      <span class="blog-tag">Workflow</span>
+      <div class="blog-title">From Raw Capture to Finished Clip: Using the Waveform Editor</div>
+      <p class="blog-excerpt">SampleGrab's built-in editor lets you trim, select, loop, and normalize without leaving the browser. Here's a complete walkthrough of every tool in the toolbar.</p>
+      <div class="blog-meta">
+        <span>6 min read</span>
+        <span>May 2025</span>
+      </div>
+      <span class="blog-arrow">→</span>
+    </a>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-inner">
+    <span class="cta-badge">Free — No account needed</span>
+    <h2 class="cta-title">Ready to capture<br>studio quality audio?</h2>
+    <p class="cta-sub">Join producers, podcasters, and researchers who record from the browser every day.</p>
+    <a href="https://chrome.google.com/webstore" class="btn-primary" style="font-size:0.9rem; padding: 1rem 2.5rem;">
+      <span class="rec-dot-demo"></span> Add SampleGrab to Chrome
+    </a>
+    <p class="cta-note">Works on Chrome · Chromium · Brave · Edge</p>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">SampleGrab</div>
+  <div class="footer-links">
+    <a href="#features">Features</a>
+    <a href="#blog">Blog</a>
+    <a href="https://github.com">GitHub</a>
+  </div>
+  <div class="footer-copy">© 2025 SampleGrab</div>
+</footer>
+
+</body>
+</html>
