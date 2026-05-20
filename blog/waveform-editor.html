@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>From Raw Capture to Finished Clip: Using the Waveform Editor — SampleGrab</title>
+  <meta name="description" content="A complete walkthrough of SampleGrab's built-in waveform editor — trim, select, loop, normalize and export without leaving your browser." />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0d0f11; --bg2: #131619; --bg3: #1a1e22;
+      --border: #242a30; --teal: #00e5c4; --red: #ff3d3d; --amber: #ffb830;
+      --text: #d4dde6; --text-dim: #6b7a89; --text-muted: #3d4a56;
+      --mono: 'Space Mono', monospace; --sans: 'Syne', sans-serif;
+    }
+    body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; }
+
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2rem; height: 60px;
+      background: rgba(13,15,17,0.95); backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-logo { font-family: var(--mono); font-size: 0.9rem; letter-spacing: 0.12em; color: var(--teal); text-decoration: none; text-transform: uppercase; }
+    .nav-logo span { color: var(--text-dim); }
+    .nav-back { font-family: var(--mono); font-size: 0.7rem; letter-spacing: 0.1em; color: var(--text-dim); text-decoration: none; text-transform: uppercase; transition: color 0.2s; }
+    .nav-back:hover { color: var(--teal); }
+
+    .article-hero { padding: 140px 2rem 80px; max-width: 760px; margin: 0 auto; border-bottom: 1px solid var(--border); }
+    .article-tag { font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal); display: block; margin-bottom: 1rem; }
+    .article-title { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.1; letter-spacing: -0.02em; margin-bottom: 1.2rem; }
+    .article-lead { font-size: 1.15rem; color: var(--text-dim); line-height: 1.8; margin-bottom: 1.5rem; }
+    .article-meta { font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); letter-spacing: 0.1em; display: flex; gap: 2rem; }
+
+    .article-body { max-width: 760px; margin: 0 auto; padding: 4rem 2rem 6rem; }
+    .article-body h2 { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.01em; margin: 3rem 0 1rem; }
+    .article-body h2::before { content: '// '; font-family: var(--mono); font-size: 0.9rem; color: var(--teal); }
+    .article-body h3 { font-size: 1.1rem; font-weight: 700; margin: 2rem 0 0.6rem; color: var(--text); }
+    .article-body p { font-size: 1rem; color: var(--text-dim); line-height: 1.8; margin-bottom: 1.4rem; }
+    .article-body strong { color: var(--text); font-weight: 700; }
+    .article-body ol { padding-left: 1.4rem; margin-bottom: 1.4rem; }
+    .article-body ol li { color: var(--text-dim); font-size: 1rem; line-height: 1.8; margin-bottom: 0.4rem; }
+
+    .callout { border-left: 3px solid var(--teal); background: rgba(0,229,196,0.04); padding: 1.2rem 1.5rem; margin: 2rem 0; border-radius: 0 4px 4px 0; }
+    .callout p { margin: 0; }
+    .callout-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--teal); margin-bottom: 0.5rem; display: block; }
+
+    /* Toolbar visual */
+    .toolbar-demo {
+      background: var(--bg3); border: 1px solid var(--border);
+      padding: 1.5rem; margin: 2rem 0;
+    }
+    .toolbar-demo-label { font-family: var(--mono); font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 1rem; }
+    .toolbar-row { display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
+    .tb-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.4rem 0.8rem; background: var(--bg2); border: 1px solid var(--border);
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.08em; color: var(--text-dim);
+      cursor: default;
+    }
+    .tb-btn.active { border-color: rgba(0,229,196,0.5); color: var(--teal); background: rgba(0,229,196,0.06); }
+    .tb-btn.danger { border-color: rgba(255,61,61,0.3); color: var(--red); }
+    .tb-sep { width: 1px; height: 24px; background: var(--border); }
+    .tb-time { font-family: var(--mono); font-size: 0.75rem; color: var(--teal); padding: 0.4rem 0.8rem; }
+
+    /* Step workflow */
+    .workflow { display: flex; flex-direction: column; gap: 0; margin: 2rem 0; border: 1px solid var(--border); }
+    .wf-step { display: flex; gap: 1.5rem; padding: 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg); transition: background 0.2s; }
+    .wf-step:last-child { border-bottom: none; }
+    .wf-step:hover { background: var(--bg2); }
+    .wf-num { font-family: var(--mono); font-size: 1.5rem; font-weight: 700; color: var(--border); min-width: 2rem; line-height: 1; padding-top: 0.1rem; }
+    .wf-content { flex: 1; }
+    .wf-title { font-weight: 700; font-size: 1rem; margin-bottom: 0.4rem; }
+    .wf-desc { font-size: 0.9rem; color: var(--text-dim); line-height: 1.7; }
+    .wf-action { display: inline-block; margin-top: 0.5rem; font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.12em; background: rgba(0,229,196,0.08); border: 1px solid rgba(0,229,196,0.25); color: var(--teal); padding: 0.2rem 0.6rem; }
+
+    .db-table { width: 100%; border-collapse: collapse; margin: 2rem 0; font-family: var(--mono); font-size: 0.82rem; }
+    .db-table th { text-align: left; padding: 0.7rem 1rem; background: var(--bg3); border: 1px solid var(--border); font-size: 0.65rem; letter-spacing: 0.15em; text-transform: uppercase; color: var(--teal); }
+    .db-table td { padding: 0.7rem 1rem; border: 1px solid var(--border); color: var(--text-dim); vertical-align: top; }
+    .db-table tr:hover td { background: var(--bg2); }
+
+    .nav-post { max-width: 760px; margin: 0 auto; padding: 2rem; border-top: 1px solid var(--border); display: flex; justify-content: space-between; gap: 1rem; }
+    .nav-post a { font-family: var(--mono); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+    .nav-post a:hover { color: var(--teal); }
+
+    footer { border-top: 1px solid var(--border); padding: 2rem; text-align: center; font-family: var(--mono); font-size: 0.65rem; color: var(--text-muted); }
+    footer a { color: var(--teal); text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="../index.html" class="nav-logo">Sample<span>Grab</span></a>
+  <a href="../index.html#blog" class="nav-back">← All posts</a>
+</nav>
+
+<article>
+  <header class="article-hero">
+    <span class="article-tag">Workflow</span>
+    <h1 class="article-title">From Raw Capture to Finished Clip: Using the Waveform Editor</h1>
+    <p class="article-lead">
+      SampleGrab includes a full clip editor built into the extension. Trim silence, select regions, loop sections, and normalize loudness — without opening a DAW or a separate app.
+    </p>
+    <div class="article-meta">
+      <span>6 min read</span>
+      <span>May 2025</span>
+    </div>
+  </header>
+
+  <div class="article-body">
+
+    <p>
+      Recording is only half the job. A raw capture from a browser tab usually has dead air at the start and end, inconsistent levels, and sections you didn't mean to include. The SampleGrab waveform editor handles all of this in-place, without leaving the extension popup.
+    </p>
+
+    <p>
+      This guide walks through every tool in the editor toolbar, in the order you'd typically use them for a standard editing workflow.
+    </p>
+
+    <h2>The editor toolbar</h2>
+
+    <div class="toolbar-demo">
+      <div class="toolbar-demo-label">// Playback toolbar (visible after recording)</div>
+      <div class="toolbar-row">
+        <div class="tb-btn active">▶ Play</div>
+        <div class="tb-btn">■ Stop</div>
+        <div class="tb-time">0:12 / 1:43</div>
+        <div class="tb-sep"></div>
+        <div class="tb-btn">▲ NR</div>
+        <div class="tb-btn">⇔ Select</div>
+        <div class="tb-btn">↻ Loop</div>
+        <div class="tb-sep"></div>
+        <div class="tb-btn">✂ Trim</div>
+        <div class="tb-btn">↓ Export</div>
+        <div class="tb-btn danger">✕ Delete</div>
+      </div>
+    </div>
+
+    <p>
+      The toolbar appears automatically once you stop recording. Each button is described in detail below, in the order of a typical editing workflow.
+    </p>
+
+    <h2>Step-by-step editing workflow</h2>
+
+    <div class="workflow">
+      <div class="wf-step">
+        <div class="wf-num">01</div>
+        <div class="wf-content">
+          <div class="wf-title">Playback review — Play &amp; Stop</div>
+          <p class="wf-desc">Hit Play to listen back. The waveform canvas shows a playhead moving through your recording. Click anywhere on the waveform to jump to that position. Use Stop to return to the beginning. This is your review pass — note where the clip actually begins and ends so you know what to trim.</p>
+          <span class="wf-action">▶ Play · ■ Stop</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">02</div>
+        <div class="wf-content">
+          <div class="wf-title">Make a selection</div>
+          <p class="wf-desc">Click the <strong>⇔ Select</strong> button to enter selection mode, then double-click and drag on the waveform to draw a selection region. The selected area is highlighted. Everything outside the selection can be trimmed away. You can also use a selection to loop just a portion of the clip for review.</p>
+          <span class="wf-action">⇔ Selection mode → double-click drag on waveform</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">03</div>
+        <div class="wf-content">
+          <div class="wf-title">Loop to audition your selection</div>
+          <p class="wf-desc">Toggle <strong>↻ Loop</strong> while a selection is active and playback will cycle continuously between the selection start and end. This is the fastest way to verify that your trim points are in the right place — listen a few times, adjust the selection if needed, then proceed to trim.</p>
+          <span class="wf-action">↻ Loop · works with or without selection</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">04</div>
+        <div class="wf-content">
+          <div class="wf-title">Trim to selection</div>
+          <p class="wf-desc">Once the selection is exactly where you want it, press <strong>✂ Trim</strong>. Everything outside the selection is removed — the clip is now exactly the length of your selection. This is a <em>destructive</em> operation on the in-memory clip, but the original file hasn't been saved yet, so you can always re-record if needed.</p>
+          <span class="wf-action">✂ Trim — removes audio outside selection</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">05</div>
+        <div class="wf-content">
+          <div class="wf-title">Normalize loudness</div>
+          <p class="wf-desc">Press <strong>▲ NR</strong> to run normalization on the full clip (or on the selection, if one is active). This finds the loudest peak in the audio and scales the entire clip so that peak hits −1 dB — maximizing perceived loudness without clipping. Essential for speech recordings from quiet sources.</p>
+          <span class="wf-action">▲ NR — normalize · can also be set to auto-run on stop in Settings</span>
+        </div>
+      </div>
+      <div class="wf-step">
+        <div class="wf-num">06</div>
+        <div class="wf-content">
+          <div class="wf-title">Export to file</div>
+          <p class="wf-desc">Hit the download button to export. The file is saved in the format you've selected in the right panel (MP3 or WAV), at the sample rate and bit depth you've configured. If "Save As" is enabled in Settings, a dialog appears letting you choose the destination. Otherwise the file goes to your configured download folder.</p>
+          <span class="wf-action">↓ Export — MP3 or WAV · format set in right panel</span>
+        </div>
+      </div>
+    </div>
+
+    <h2>Choosing MP3 vs WAV</h2>
+
+    <p>
+      The format selector in the right panel controls what SampleGrab writes to disk when you export.
+    </p>
+
+    <table class="db-table">
+      <thead>
+        <tr>
+          <th>Format</th>
+          <th>File size</th>
+          <th>Quality</th>
+          <th>Best for</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>MP3</td>
+          <td>~1 MB/min</td>
+          <td>Lossy (high quality)</td>
+          <td>Sharing, podcasts, anything where size matters</td>
+        </tr>
+        <tr>
+          <td>WAV</td>
+          <td>~10 MB/min at 16bit/44.1k</td>
+          <td>Lossless</td>
+          <td>Further editing in a DAW, archival, sample libraries</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="callout">
+      <span class="callout-label">Pro tip</span>
+      <p>If you're going to bring the clip into a DAW (Ableton, Logic, Reaper, etc.) for further editing or mixing, always export as <strong>WAV</strong>. Re-encoding an MP3 into another lossy format compounds the quality loss. WAV gives you a clean, uncompressed starting point for any further processing.</p>
+    </div>
+
+    <h2>The playback meter</h2>
+
+    <p>
+      During playback, a vertical meter appears on the right side of the waveform canvas showing real-time L/R levels of the clip as it plays back. This is distinct from the recording meter — it lets you verify the actual output levels of your edited, normalized clip before export.
+    </p>
+
+    <p>
+      If the playback meter is consistently hitting the red zone even after normalization, your source material may have been recorded with clipping. In this case, trim the loudest sections or apply a lower normalization target by adjusting the gain knob before your next recording.
+    </p>
+
+    <h2>Auto-normalize on stop</h2>
+
+    <p>
+      If you'd rather skip the manual normalization step, open <strong>Settings → Auto-normalize on stop</strong>. When enabled, SampleGrab runs the normalization pass automatically every time you press Stop — so every clip in your library already has consistent, maximized loudness.
+    </p>
+
+    <p>
+      This pairs well with auto-download: enable both and SampleGrab becomes a one-click capture tool — hit record, hit stop, and a normalized, properly-formatted file lands in your downloads folder automatically.
+    </p>
+
+    <h2>Managing the library</h2>
+
+    <p>
+      Every recording session adds a clip to the Library panel at the bottom of the extension. Clips are named automatically with their source tab title and timestamp. From the library you can preview, re-export, or delete individual clips. When you're done with a session, use <strong>⬇ ZIP all</strong> to bundle every clip into a single archive for easy transfer or backup.
+    </p>
+
+    <div class="callout">
+      <span class="callout-label">Note on storage</span>
+      <p>SampleGrab holds audio data in browser memory, not on disk, until you explicitly export a clip. If you close the extension popup or navigate away, clips in the library persist in the extension's background context — but a full browser restart may clear them. <strong>Always export important clips before closing the browser.</strong></p>
+    </div>
+
+  </div>
+</article>
+
+<div class="nav-post">
+  <a href="retro-rec.html">← Retro-Rec guide</a>
+  <a href="../index.html#blog">All posts →</a>
+</div>
+
+<footer>
+  <a href="../index.html">SampleGrab</a> — Studio Audio Capture for Chrome
+</footer>
+
+</body>
+</html>
