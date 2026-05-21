@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="hr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STUDIO AUDIO CAPTURE - Profesionalna Postaja</title>
+    <style>
+        /* Osnovni stilovi i varijable */
+        :root {
+            --bg-dark: #090c0f;
+            --text-main: #f0f3f6;
+            --text-sub: #b1b5bd;
+            --accent-cyan: #00f2ff;
+            --accent-red: #ff4d4d;
+            --card-bg: rgba(22, 28, 35, 0.6);
+            --card-border: rgba(255, 255, 255, 0.05);
+            --shadow-premium: 0 10px 40px rgba(0, 0, 0, 0.5);
+            --font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: var(--font-family);
+            font-size: 16px;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3 {
+            margin-top: 0;
+            font-weight: 700;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        /* Sekcije */
+        section {
+            padding: 80px 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Hero Sekcija */
+        #hero {
+            text-align: center;
+            padding-top: 120px;
+            position: relative;
+        }
+
+        #hero-headline {
+            font-size: 2.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        #hero-headline span {
+            display: block;
+            font-weight: 300;
+            font-size: 1rem;
+            color: var(--text-sub);
+            letter-spacing: 5px;
+            margin-bottom: 5px;
+        }
+
+        #hero-subheadline {
+            color: var(--text-sub);
+            max-width: 700px;
+            margin: 0 auto 50px auto;
+        }
+
+        #hero-waveform {
+            width: 100%;
+            height: 150px;
+            margin-bottom: 50px;
+            filter: drop-shadow(0 0 10px rgba(0, 242, 255, 0.5));
+            /* U idealnom slučaju, ovdje bi bila animacija s SVG-om ili slikom talasa */
+            background: linear-gradient(90deg, transparent, rgba(0,242,255,0.1), transparent);
+        }
+
+        .cta-button {
+            display: inline-block;
+            padding: 15px 40px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background-color: var(--accent-red);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 77, 77, 0.3);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 30px rgba(255, 77, 77, 0.5);
+        }
+
+        #hero-learn-more {
+            display: block;
+            color: var(--text-sub);
+            margin-top: 20px;
+            font-size: 0.9rem;
+        }
+
+        /* Karakteristike Sekcija */
+        #features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 40px;
+        }
+
+        .feature-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-premium);
+            transition: border-color 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-cyan);
+        }
+
+        .feature-title {
+            color: var(--text-main);
+            margin-bottom: 10px;
+        }
+
+        .feature-sub {
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+        }
+
+        .feature-ui-snippet {
+            width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin-top: 20px;
+            /* Ovdje bi išli izrezi s originalne slike */
+        }
+
+        /* Mockup Sekcija */
+        #mockup {
+            text-align: center;
+        }
+
+        #mockup-title {
+            font-size: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-main);
+            margin-bottom: 50px;
+        }
+
+        #mockup-title span {
+            color: var(--accent-cyan);
+        }
+
+        #laptop-container {
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        #laptop-image {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 20px;
+            /* Ovdje bi išla slika laptopa */
+        }
+
+        /* Testimonials Sekcija */
+        #testimonials {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            overflow-x: auto;
+            padding-bottom: 40px;
+        }
+
+        .testimonial-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-premium);
+            flex: 0 0 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .testimonial-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .testimonial-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: #333;
+            /* Ovdje bi išla slika avatara */
+        }
+
+        .testimonial-info {
+            flex-grow: 1;
+        }
+
+        .testimonial-name {
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .testimonial-title {
+            color: var(--text-sub);
+            font-size: 0.8rem;
+        }
+
+        .testimonial-quote {
+            color: var(--text-sub);
+            font-style: italic;
+        }
+
+        .testimonial-stars {
+            color: #ffd700; /* Zlatna boja za zvijezde */
+        }
+
+        /* Pricing Sekcija */
+        #pricing {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+            text-align: center;
+        }
+
+        .pricing-card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 50px 30px;
+            border-radius: 12px;
+            box-shadow: var(--shadow-premium);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .pricing-card.recommended {
+            border-color: var(--accent-cyan);
+            transform: scale(1.05);
+        }
+
+        .pricing-tier-name {
+            text-transform: uppercase;
+            color: var(--text-sub);
+            letter-spacing: 3px;
+            margin-bottom: 10px;
+        }
+
+        .pricing-tier-price {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 30px;
+        }
+
+        .pricing-tier-price span {
+            font-weight: 300;
+            font-size: 1rem;
+            vertical-align: super;
+        }
+
+        .pricing-features-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 40px 0;
+            text-align: left;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+        }
+
+        .pricing-features-list li {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .check-icon {
+            color: var(--accent-cyan);
+            font-size: 1.2rem;
+        }
+
+        /* Final CTA Sekcija */
+        #final-cta {
+            text-align: center;
+            background: linear-gradient(180deg, var(--bg-dark), rgba(255, 77, 77, 0.15));
+            border-top: 1px solid var(--card-border);
+        }
+
+        #final-cta-headline {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 20px;
+        }
+
+        #final-cta-sub {
+            color: var(--text-sub);
+            margin-bottom: 50px;
+        }
+
+        /* Footer */
+        footer {
+            border-top: 1px solid var(--card-border);
+            padding: 60px 20px;
+            color: var(--text-sub);
+            font-size: 0.8rem;
+        }
+
+        .footer-grid {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 40px;
+        }
+
+        .footer-logo {
+            text-transform: uppercase;
+            color: var(--text-main);
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 20px;
+        }
+
+        .footer-links-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .footer-links-col a:hover {
+            color: var(--accent-cyan);
+        }
+
+        .footer-social-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .social-icon:hover {
+            color: var(--accent-cyan);
+        }
+
+    </style>
+</head>
+<body>
+
+    <section id="hero">
+        <h1 id="hero-headline">
+            <span>STUDIO AUDIO CAPTURE</span>
+            THE PROFESSIONAL BROWSING AUDIO RECORDING WORKSTATION
+        </h1>
+        <p id="hero-subheadline">
+            Capture pristine system, tab, and mic audio with precision metering and true limiter control—right in your browser.
+        </p>
+        <div id="hero-waveform">
+            </div>
+        <button class="cta-button">START RECORDING</button>
+        <a href="#features" id="hero-learn-more">Learn More</a>
+    </section>
+
+    <section id="features">
+        <div class="feature-card">
+            <h3 class="feature-title">Real-Time Waveform</h3>
+            <p class="feature-sub">Detailed closeup UI precisely synchronization your waveform from the instant audio capturing.</p>
+            <div style="background-color: #111; height: 100px; border-radius: 8px;"></div>
+        </div>
+        <div class="feature-card">
+            <h3 class="feature-title">Gain & Limiter</h3>
+            <p class="feature-sub">Precise controlling knobs for precise and quick audio with true metering. Demonstrates tactile precision.</p>
+            <div style="background-color: #111; height: 100px; border-radius: 8px;"></div>
+        </div>
+        <div class="feature-card">
+            <h3 class="feature-title">Multi-Format</h3>
+            <p class="feature-sub">Unlimited projects, multi-rate works paces. Set options for formats, bit depths and sample rates, etc.</p>
+            <div style="background-color: #111; height: 100px; border-radius: 8px;"></div>
+        </div>
+    </section>
+
+    <section id="mockup">
+        <h2 id="mockup-title">
+            <span>SEE YOUR SOUND. FEEL THE PRECISION.</span>
+        </h2>
+        <div id="laptop-container">
+            <div style="background-color: #111; padding-top: 56.25%; border-radius: 20px; position: relative; overflow: hidden; color: var(--text-sub); display: flex; align-items: center; justify-content: center; font-style: italic;">
+                [Slika laptopa sa softverom]
+            </div>
+        </div>
+    </section>
+
+    <section id="testimonials">
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+                <div class="testimonial-avatar"></div>
+                <div class="testimonial-info">
+                    <div class="testimonial-name">Producer Name</div>
+                    <div class="testimonial-title">Studio</div>
+                </div>
+                <div class="testimonial-stars">★★★★★</div>
+            </div>
+            <p class="testimonial-quote">"For capturing that exact online sample, there is no other tool. Pure audio quality."</p>
+        </div>
+        <div class="testimonial-card">
+            <div class="testimonial-header">
+                <div class="testimonial-avatar"></div>
+                <div class="testimonial-info">
+                    <div class="testimonial-name">YouTuber Name</div>
+                    <div class="testimonial-title">Creator</div>
+                </div>
+                <div class="testimonial-stars">★★★★★</div>
+            </div>
+            <p class="testimonial-quote">"Essential for my podcast. The limiter ensures I never peak, even during spontaneous moments."</p>
+        </div>
+        </section>
+
+    <section id="pricing">
+        <div class="pricing-card">
+            <div class="pricing-tier-name">Free</div>
+            <div class="pricing-tier-price">$0<span>/month</span></div>
+            <ul class="pricing-features-list">
+                <li><span class="check-icon">✓</span> Basic Metering</li>
+                <li><span class="check-icon">✓</span> Basic Limiter</li>
+                <li><span class="check-icon">✓</span> Standard Resolution</li>
+            </ul>
+            <button class="cta-button" style="background-color: transparent; color: var(--accent-red); border: 2px solid var(--accent-red); width: 100%;">START FREE</button>
+        </div>
+        <div class="pricing-card recommended">
+            <div class="pricing-tier-name">Pro</div>
+            <div class="pricing-tier-price">$179<span>/year</span></div>
+            <ul class="pricing-features-list">
+                <li><span class="check-icon">✓</span> Pro Metering</li>
+                <li><span class="check-icon">✓</span> True Limiter Control</li>
+                <li><span class="check-icon">✓</span> High-Resolution Formats</li>
+                <li><span class="check-icon">✓</span> Waveform Editing</li>
+            </ul>
+            <button class="cta-button" style="width: 100%;">UPGRADE NOW</button>
+        </div>
+        <div class="pricing-card">
+            <div class="pricing-tier-name">Creator</div>
+            <div class="pricing-tier-price">$30<span>/month</span></div>
+            <ul class="pricing-features-list">
+                <li><span class="check-icon">✓</span> Unlimited Projects</li>
+                <li><span class="check-icon">✓</span> Team Workspaces</li>
+                <li><span class="check-icon">✓</span> Priority Support</li>
+            </ul>
+            <button class="cta-button" style="background-color: transparent; color: var(--accent-red); border: 2px solid var(--accent-red); width: 100%;">START CREATOR</button>
+        </div>
+    </section>
+
+    <section id="final-cta">
+        <h2 id="final-cta-headline">YOUR PERFECT SOUND IS ONE CLICK AWAY</h2>
+        <p id="final-cta-sub">Unlock Studio Quality NOW. Join thousands of professional creators.</p>
+        <button class="cta-button">UNLOCK STUDIO QUALITY NOW</button>
+    </section>
+
+    <footer>
+        <div class="footer-grid">
+            <div class="footer-links-col">
+                <div class="footer-logo">STUDIO AUDIO CAPTURE</div>
+                <p>Designed with precision in 2026.</p>
+            </div>
+            <div class="footer-links-col">
+                <strong>Product</strong>
+                <a href="#">Product 1</a>
+                <a href="#">Product 2</a>
+                <a href="#">Product 3</a>
+            </div>
+            <div class="footer-links-col">
+                <strong>Features</strong>
+                <a href="#">Metering</a>
+                <a href="#">Limiter</a>
+                <a href="#">Recording</a>
+            </div>
+            <div class="footer-links-col">
+                <strong>Resources</strong>
+                <a href="#">Blog</a>
+                <a href="#">Support</a>
+                <a href="#">Status</a>
+            </div>
+            <div class="footer-links-col">
+                <strong>Social</strong>
+                <div class="footer-social-links">
+                    <a href="#" class="social-icon">IG</a>
+                    <a href="#" class="social-icon">YT</a>
+                    <a href="#" class="social-icon">TW</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Osnovna JS logika po potrebi (npr. glatko skrolanje)
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+</html>
